@@ -8,18 +8,23 @@ from utils import get_user, update_user, delete_user, add_user, deduct_credit, g
 
 app = Flask(__name__)
 
-# Load from Environment Variables
+# Load from Railway Environment Variables
 app.secret_key = os.getenv('SECRET_KEY')
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
-# Firebase Initialization
+# Firebase Initialization with ENV JSON
 firebase_json = os.getenv('FIREBASE_JSON')
-firebase_dict = json.loads(firebase_json)
+if not firebase_json:
+    raise Exception("❌ FIREBASE_JSON not set in Railway variables.")
 
-cred = credentials.Certificate(firebase_dict)
-firebase_admin.initialize_app(cred, {
-    'databaseURL': os.getenv('FIREBASE_DB_URL')
-})
+try:
+    firebase_dict = json.loads(firebase_json)
+    cred = credentials.Certificate(firebase_dict)
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': os.getenv('FIREBASE_DB_URL')
+    })
+except Exception as e:
+    raise Exception(f"❌ Failed to initialize Firebase: {e}")
 
 # ========== Routes ==========
 
@@ -96,7 +101,7 @@ def reset_password():
 
 @app.route('/admin')
 def admin():
-    if 'mobile' not in session or session['mobile'] != '8830720742':  # Your admin number set correctly
+    if 'mobile' not in session or session['mobile'] != '8830720742':  # Your admin mobile
         return redirect(url_for('home'))
 
     ref = db.reference('users')
