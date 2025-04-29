@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard | Supercontent</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      padding: 0;
+      color: #111827;
+    }
+
+    header {
+      background-color: #4f46e5;
+      padding: 1rem 2rem;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .info {
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 0.75rem;
+      cursor: pointer;
+      background-color: #e5e7eb;
+      border-radius: 0.5rem 0.5rem 0 0;
+      font-weight: 600;
+    }
+
+    .tab.active {
+      background-color: #4f46e5;
+      color: white;
+    }
+
+    .tool {
+      display: none;
+    }
+
+    .tool.active {
+      display: block;
+    }
+
+    textarea, select, input {
+      width: 100%;
+      padding: 1rem;
+      margin: 0.5rem 0 1rem 0;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      resize: vertical;
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      margin-right: 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      background-color: #4f46e5;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #4338ca;
+    }
+
+    .logout {
+      background-color: #ef4444;
+    }
+
+    .logout:hover {
+      background-color: #dc2626;
+    }
+
+    .output {
+      white-space: pre-wrap;
+      background-color: #f9fafb;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
+      border: 1px dashed #d1d5db;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .close-btn {
+      background-color: #ef4444;
+      margin-top: 1rem;
+    }
+
+    .close-btn:hover {
+      background-color: #dc2626;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="title">Supercontent Dashboard</div>
+    <div class="info">
+      User: <strong>{{ name }}</strong> | Credits: <strong>{{ credits }}</strong>
+      <button onclick="openModal()">Change Password</button>
+      <a href="/logout"><button class="logout">Logout</button></a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('post')">Post Generator</div>
+      <div class="tab" onclick="switchTab('comment')">Comment Generator</div>
+    </div>
+
+    <!-- Post Generator Tool -->
+    <div id="post" class="tool active">
+      <form method="POST" action="/generate_post">
+        <label>Enter Topic:</label>
+        <textarea name="topic" rows="3" placeholder="e.g., Importance of Networking on LinkedIn" required></textarea>
+        <label>Select Tone:</label>
+        <select name="tone" required>
+          <option value="Professional">Professional</option>
+          <option value="Friendly">Friendly</option>
+          <option value="Motivational">Motivational</option>
+          <option value="Insightful">Insightful</option>
+        </select>
+        <button type="submit">Generate Post</button>
+        <button type="button" onclick="clearForm('post')">Clear</button>
+      </form>
+      {% if post %}
+        <div class="output">{{ post }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Comment Generator Tool -->
+    <div id="comment" class="tool">
+      <form method="POST" action="/generate_comment">
+        <label>Paste LinkedIn Post:</label>
+        <textarea name="post_input" rows="4" placeholder="Paste LinkedIn content here..." required></textarea>
+        <label>Select Tone:</label>
+        <select name="tone" required>
+          <option value="Supportive">Supportive</option>
+          <option value="Curious">Curious</option>
+          <option value="Appreciative">Appreciative</option>
+          <option value="Engaging">Engaging</option>
+        </select>
+        <button type="submit">Generate Comment</button>
+        <button type="button" onclick="clearForm('comment')">Clear</button>
+      </form>
+      {% if comment %}
+        <div class="output">{{ comment }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Password Change Modal -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content">
+      <h2>Change Password</h2>
+      <form method="POST" action="/reset_password">
+        <input type="password" name="current_password" placeholder="Current Password" required />
+        <input type="password" name="new_password" placeholder="New Password" required />
+        <input type="password" name="confirm_password" placeholder="Confirm New Password" required />
+        <button type="submit">Update Password</button>
+      </form>
+      <button class="close-btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tabId) {
+      const tabs = document.querySelectorAll('.tab');
+      const tools = document.querySelectorAll('.tool');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      tools.forEach(tool => tool.classList.remove('active'));
+      document.querySelector(`.tab[onclick*="${tabId}"]`).classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function clearForm(id) {
+      const form = document.querySelector(`#${id} form`);
+      form.reset();
+      const output = form.parentElement.querySelector('.output');
+      if (output) output.innerHTML = '';
+    }
+
+    function openModal() {
+      document.getElementById('passwordModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('passwordModal').style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>
