@@ -8,14 +8,15 @@ from utils import get_user, update_user, delete_user, add_user, deduct_credit, g
 
 app = Flask(__name__)
 
-# Load from Railway Environment Variables
+# Load from Railway environment
 app.secret_key = os.getenv('SECRET_KEY')
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
-# Firebase Initialization with ENV JSON
+# Firebase init from FIREBASE_JSON
 firebase_json = os.getenv('FIREBASE_JSON')
+
 if not firebase_json:
-    raise Exception("❌ FIREBASE_JSON not set in Railway variables.")
+    raise Exception("❌ FIREBASE_JSON is not set in Railway variables.")
 
 try:
     firebase_dict = json.loads(firebase_json)
@@ -24,7 +25,7 @@ try:
         'databaseURL': os.getenv('FIREBASE_DB_URL')
     })
 except Exception as e:
-    raise Exception(f"❌ Failed to initialize Firebase: {e}")
+    raise Exception(f"❌ Firebase init failed: {e}")
 
 # ========== Routes ==========
 
@@ -96,12 +97,12 @@ def reset_password():
 
     update_user(session['mobile'], {'password': new_password})
     session.clear()
-    flash('Password updated successfully. Please login again.')
+    flash('Password updated. Please login again.')
     return redirect(url_for('home'))
 
 @app.route('/admin')
 def admin():
-    if 'mobile' not in session or session['mobile'] != '8830720742':  # Your admin mobile
+    if 'mobile' not in session or session['mobile'] != '8830720742':
         return redirect(url_for('home'))
 
     ref = db.reference('users')
@@ -151,7 +152,6 @@ def logout():
     session.clear()
     return redirect(url_for('home'))
 
-# ========== Run App ==========
-
+# ========== For Local Testing Only ==========
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
