@@ -3,6 +3,7 @@ import openai
 import firebase_admin
 from firebase_admin import credentials, db
 import os
+from utils import get_user, update_user, delete_user, add_user, deduct_credit, generate_post, generate_comment
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Change this to a strong secret key
@@ -10,58 +11,11 @@ app.secret_key = 'your_secret_key'  # Change this to a strong secret key
 # Initialize Firebase
 cred = credentials.Certificate('firebase_config.json')
 firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://your-firebase-project.firebaseio.com/'  # change to your database URL
+    'databaseURL': 'https://your-firebase-project.firebaseio.com/'  # Change to your Firebase database URL
 })
 
-# Set your OpenAI API key
-openai.api_key = 'your_openai_api_key'
-
-# ========== Helper Functions ==========
-
-def get_user(mobile):
-    ref = db.reference(f'users/{mobile}')
-    return ref.get()
-
-def update_user(mobile, data):
-    ref = db.reference(f'users/{mobile}')
-    ref.update(data)
-
-def delete_user(mobile):
-    ref = db.reference(f'users/{mobile}')
-    ref.delete()
-
-def add_user(name, mobile, password, credits):
-    ref = db.reference(f'users/{mobile}')
-    ref.set({
-        'name': name,
-        'mobile': mobile,
-        'password': password,
-        'credits': credits
-    })
-
-def deduct_credit(mobile):
-    user = get_user(mobile)
-    if user and int(user['credits']) > 0:
-        new_credits = int(user['credits']) - 1
-        update_user(mobile, {'credits': new_credits})
-        return True
-    return False
-
-def generate_post(topic, tone):
-    prompt = f"Write a professional LinkedIn post of 80-100 words on the topic '{topic}' in a {tone} tone. Format properly with pointers, spaces, and relevant hashtags. Use simple and friendly language."
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response.choices[0].message.content.strip()
-
-def generate_comment(post_text, tone):
-    prompt = f"Read this LinkedIn post:\n\n{post_text}\n\nWrite a human-sounding comment (no emoji, no AI words) in {tone} tone. Limit to 25-60 words. Make it natural and thoughtful."
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response.choices[0].message.content.strip()
+# Set OpenAI API Key
+openai.api_key = 'your-openai-api-key'  # Replace with your OpenAI key
 
 # ========== Routes ==========
 
@@ -138,7 +92,7 @@ def reset_password():
 
 @app.route('/admin')
 def admin():
-    if 'mobile' not in session or session['mobile'] != 'your_admin_mobile_number':  # set admin mobile number
+    if 'mobile' not in session or session['mobile'] != '8830720742':
         return redirect(url_for('home'))
 
     ref = db.reference('users')
