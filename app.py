@@ -152,6 +152,9 @@ def logout():
     session.clear()
     return redirect(url_for('home'))
 
-# ========== For Local Testing Only ==========
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+# Do not run this in Railway — gunicorn handles it
+# Uncomment below only for local testing
+
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=5000, debug=True)
+
