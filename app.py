@@ -2,20 +2,24 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import openai
 import firebase_admin
 from firebase_admin import credentials, db
+import json
 import os
 from utils import get_user, update_user, delete_user, add_user, deduct_credit, generate_post, generate_comment
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Change this to a strong secret key
 
-# Initialize Firebase
-cred = credentials.Certificate('firebase_config.json')
+# Load from Environment Variables
+app.secret_key = os.getenv('SECRET_KEY')
+openai.api_key = os.getenv('OPENAI_API_KEY')
+
+# Firebase Initialization
+firebase_json = os.getenv('FIREBASE_JSON')
+firebase_dict = json.loads(firebase_json)
+
+cred = credentials.Certificate(firebase_dict)
 firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://your-firebase-project.firebaseio.com/'  # Change to your Firebase database URL
+    'databaseURL': os.getenv('FIREBASE_DB_URL')
 })
-
-# Set OpenAI API Key
-openai.api_key = 'your-openai-api-key'  # Replace with your OpenAI key
 
 # ========== Routes ==========
 
@@ -92,7 +96,7 @@ def reset_password():
 
 @app.route('/admin')
 def admin():
-    if 'mobile' not in session or session['mobile'] != '8830720742':
+    if 'mobile' not in session or session['mobile'] != '8830720742':  # Your admin number set correctly
         return redirect(url_for('home'))
 
     ref = db.reference('users')
