@@ -152,9 +152,7 @@ def logout():
     session.clear()
     return redirect(url_for('home'))
 
-# Do not run this in Railway — gunicorn handles it
-# Uncomment below only for local testing
-
+# ⛔️ Comment out app.run() to prevent dev server in Railway
 # if __name__ == '__main__':
 #     app.run(host='0.0.0.0', port=5000, debug=True)
 
